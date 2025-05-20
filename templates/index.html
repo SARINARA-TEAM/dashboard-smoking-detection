@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistem Deteksi Merokok</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="navbar">
+            <div class="logo">DETEKSI MEROKOK</div>
+            <div class="nav-buttons">
+                <a href="/" class="nav-btn">Beranda</a>
+                <a href="/statistik" class="nav-btn">Statistik</a>
+                <a href="/tentang" class="nav-btn">Tentang</a>
+            </div>
+        </div>
+    </header>
+    <main>
+        <section class="video-section">
+            <h2 style="text-align: center; margin-bottom: 10px;">REAL TIME MONITORING</h2>
+            <div class="video-container">
+                <img src="{{ url_for('video_feed') }}" width="640" height="480" />
+                <h3 id="status">Status: Menunggu...</h3>
+                <script>
+                    setInterval(() => {
+                        fetch("/status")
+                            .then(res => res.json())
+                            .then(data => {
+                                document.getElementById("status").innerText = "Status: " + data.label.toUpperCase();
+                            });
+                    }, 1000);
+                </script>
+                <!-- <video id="cctv-video" controls autoplay muted>
+                    <source src="{{ url_for('static', filename='video/cctv.mp4') }}" type="video/mp4">
+                    Browser Anda tidak mendukung video tag ini.
+                </video> -->
+            </div>
+        </section>
+        
+        <section class="hero">
+            <div class="info-bar">
+                <div class="info-item">📅 Tanggal</div>
+                <div class="info-item">📍 Waktu</div>
+            </div>
+        </section>
+
+        <!-- Text to Speech Section -->
+         <section class="text-to-speech">
+            <h3>ANNOUNCEMENT</h3>
+            <input type="text" id="text-to-speak" placeholder="Masukkan teks di sini..." class="speech-input">
+            <button onclick="speakText()" class="speak-button">Ucapkan</button>
+        </section>
+        
+        <section class="cards">
+            <a href="{{ url_for('detail_zat', zat_id=0) }}" class="card-link">
+                <div class="card">
+                    <div class="image-placeholder">
+                        <img src="{{ url_for('static', filename='assets/tar.jpg') }}" alt="Zat Tar" class="zat-image">
+                    </div>
+                    <h3>Zat Berbahaya rokok</h3>
+                    <p>Status: Aman</p>
+                </div>
+            </a>
+            <a href="{{ url_for('detail_zat', zat_id=1) }}" class="card-link">
+                <div class="card">
+                    <div class="image-placeholder">
+                        <img src="{{ url_for('static', filename='assets/tar.jpg') }}" alt="Zat Tar" class="zat-image">
+                    </div>
+                    <h3>Zat Berbahaya rokok</h3>
+                    <p>Status: Aman</p>
+                </div>
+            </a>
+            <a href="{{ url_for('detail_zat', zat_id=2) }}" class="card-link">
+                <div class="card">
+                    <div class="image-placeholder">
+                        <img src="{{ url_for('static', filename='assets/tar.jpg') }}" alt="Zat Tar" class="zat-image">
+                    </div>
+                    <h3>Zat Berbahaya rokok</h3>
+                    <p>Status: Aman</p>
+                </div>
+            </a>
+            <a href="{{ url_for('detail_zat', zat_id=3) }}" class="card-link">
+                <div class="card">
+                    <div class="image-placeholder">
+                        <img src="{{ url_for('static', filename='assets/tar.jpg') }}" alt="Zat Tar" class="zat-image">
+                    </div>
+                    <h3>Zat Berbahaya rokok</h3>
+                    <p>Status: Aman</p>
+                </div>
+            </a>
+        </section>
+        
+        <section class="alert-section">
+            <div class="image-warning">
+                <img src="{{ url_for('static', filename='assets/No_Smoking.svg') }}" alt="Peringatan Merokok" class="warning-image">
+            </div>
+            <div class="text-warning">
+                <h2>STOP MEROKOK,</h2>
+                <p>KENALI BAHAYANYA</p>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Tombol bulat -->
+    <div class="chat-button" onclick="toggleChat()">
+        💬
+    </div>
+
+    <!-- Kotak Chatbot -->
+    <div class="chat-container" id="chatbot" style="display: none;">
+        <div class="chat-header">Chat with Us</div>
+        <div class="chat-box" id="chat-box"></div>
+        <input type="text" id="user-input" placeholder="Tanya sesuatu..." class="chat-input">
+        <button onclick="sendMessage()" class="send-button">Kirim</button>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 Sistem Deteksi Merokok</p>
+        </div>
+    </footer>
+    
+    <script>
+        function toggleChat() {
+            const chatBox = document.getElementById('chatbot');
+            chatBox.style.display = chatBox.style.display === "none" ? "flex" : "none"; // Tampilkan/Sembunyikan chat
+        }
+    
+        function sendMessage() {
+            let input = document.getElementById('user-input');
+            let userMessage = input.value;
+            if (userMessage.trim() === "") return; // Cegah mengirim pesan kosong
+    
+            // Tambahkan pesan pengguna ke chat
+            let chatBox = document.getElementById('chat-box');
+            let userBubble = document.createElement('div');
+            userBubble.className = "bubble user-bubble";
+            userBubble.innerText = userMessage;
+            chatBox.appendChild(userBubble);
+            input.value = ''; // Reset input
+            // Mengambil jawaban dari server
+            fetch(`/get_response/${encodeURIComponent(userMessage)}`)
+                .then(response => response.json())
+                .then(data => {
+                    let botBubble = document.createElement('div');
+                    botBubble.className = "bubble bot-bubble";
+                    botBubble.innerText = data.response;
+                    chatBox.appendChild(botBubble);
+                    chatBox.scrollTop = chatBox.scrollHeight; // Scroll ke bawah
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+        function speakText() {
+               const textInput = document.getElementById('text-to-speak').value;
+               if (textInput.trim() === "") return; // Cegah input kosong
+               const speech = new SpeechSynthesisUtterance(textInput);
+               speech.lang = 'id-ID'; // Mengatur bahasa
+               
+                // Mendapatkan daftar suara
+                let voices = window.speechSynthesis.getVoices();
+
+                // Mencari suara Indonesia
+                let indonesianVoices = voices.filter(voice => voice.lang === 'id-ID');
+                
+                // Pilih suara dengan nama yang populer, misalnya yang seperti "Google"
+                if (indonesianVoices.length > 0) {
+                    speech.voice = indonesianVoices[0]; // Mencoba suara pertama sebagai default
+                    }
+                    // Set kecepatan dan pitch (Anda mungkin ingin menyesuaikannya)
+                    speech.rate = 0.75;  // Normal speed (1 is default)
+                    speech.pitch = 10; // Normal pitch (default)
+                     // Mengucapkan teks
+                     window.speechSynthesis.speak(speech);
+                    }
+                    // Event listener untuk mendapatkan daftar suara
+                    window.speechSynthesis.onvoiceschanged = () => {
+                        window.speechSynthesis.getVoices();
+                    };
+    </script>
+</body>
+</html>
