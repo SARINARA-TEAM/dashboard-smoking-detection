@@ -17,7 +17,7 @@ last_tts_time = 0
 def generate_frames():
     global latest_status, last_tts_time
     # cap = cv2.VideoCapture(0)
-    cap = cv2.VideoCapture(r"http://192.168.18.48:81/stream", cv2.CAP_FFMPEG)  # URL kamera ESP32-CAM http://192.168.1.1:81/stream
+    cap = cv2.VideoCapture(r"http://192.168.1.7:81/stream", cv2.CAP_FFMPEG)  # URL kamera ESP32-CAM http://192.168.1.1:81/stream
 
     if not cap.isOpened():
         print("Kamera tidak bisa dibuka!")
@@ -36,30 +36,15 @@ def generate_frames():
         
         current_time = time.time()
         if label == "smoking" and (current_time - last_tts_time) > 10:
-            # if not tts_playing:
-            #     speak("smoking detected, don't smoking in this area!")
-            #     tts_playing = True
-            # last_tts_time = current_time
             threading.Thread(target=speak, args=("smoking detected, don't smoking in this area!",), daemon=True).start()
             last_tts_time = current_time
         else:
-            # tts_playing = False
             pass
 
         ret, buffer = cv2.imencode('.jpg', detected_frame)
         frame_bytes = buffer.tobytes()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
-
-
-# def load_qa_data(filename):
-#     qa_pairs = {}
-#     with open(filename, mode='r', encoding='utf-8') as file:
-#         reader = csv.DictReader(file)
-#         for row in reader:
-#             qa_pairs[row['pertanyaan'].lower()] = row['jawaban']
-#     return qa_pairs
-# qa_data = load_qa_data('static/assets/cleaned_data_qna.csv')
 
 @app.route('/')
 def home():
@@ -83,7 +68,7 @@ def statistik():
 
 @app.route('/tentang')
 def tentang():
-    return render_template('tentang.html')  # Your about page
+    return render_template('tentang.html')
 
 @app.route('/detail_zat/<int:zat_id>')
 def detail_zat(zat_id):
@@ -100,10 +85,6 @@ def detail_zat(zat_id):
 def get_response(message):
     answer = get_answer(message)
     return jsonify(response=answer)
-
-    # message = message.lower()
-    # response = qa_data.get(message, "Maaf, saya tidak mengerti pertanyaan itu. Silakan coba tanyakan yang lain!")
-    # return jsonify(response=response)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, threaded=True)

@@ -60,22 +60,3 @@ def process_frame(frame):
         cv2.putText(output_frame, f"{label} ({confidence:.2f})", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
 
     return output_frame, label
-
-##default
-# def process_frame(frame):
-#     # Resize frame sesuai input model (misal: 224x224)
-#     input_size = (224, 224)
-#     resized_frame = cv2.resize(frame, input_size)
-#     normalized_frame = resized_frame / 255.0  # Normalisasi jika perlu
-#     input_frame = np.expand_dims(normalized_frame, axis=0)  # Tambah batch dimension
-
-#     # Prediksi
-#     prediction = model.predict(input_frame)
-#     predicted_class = np.argmax(prediction[0])
-#     label = CLASS_NAMES[predicted_class]
-    
-#     # Tampilkan hasil prediksi di frame
-#     color = (0, 0, 255) if label == "smoking" else (0, 255, 0)
-#     cv2.putText(frame, f"Status: {label}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
-
-#     return frame, label
