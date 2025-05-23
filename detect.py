@@ -4,7 +4,7 @@ from tensorflow.keras.models import load_model
 
 # Load model Keras
 MODEL_PATH = 'mobilenetv2_binary_classifier8.h5'
-##try haarcascade
+
 HAAR_CASCADE_PATH = 'haarcascade_frontalface_alt2.xml'
 
 # Label class
@@ -12,11 +12,9 @@ CLASS_NAMES = ['not_smoking', 'smoking']
 
 try:
     model = load_model(MODEL_PATH)
-    #####
     body_cascade = cv2.CascadeClassifier(HAAR_CASCADE_PATH)
     if body_cascade.empty():
         raise ValueError("Gagal memuat file haarcascade_frontalface_alt2.xml")
-    ######
 except Exception as e:
     raise ValueError(f"Gagal memuat model: {e}")
 
@@ -38,14 +36,7 @@ def process_frame(frame):
         input_size = (224, 224)
         resized_roi = cv2.resize(roi, input_size)
         normalized_roi = resized_roi / 255.0
-        # input_data = np.expand_dims(normalized_roi, axis=0)
-
-        # # Prediksi
-        # prediction = model.predict(input_data)
-        # predicted_class = np.argmax(prediction[0])
-        # label = CLASS_NAMES[predicted_class]
-
-        input_data = np.expand_dims(resized_roi, axis=0).astype(model.input.dtype)
+        input_data = np.expand_dims(normalized_roi, axis=0).astype(np.float32)
 
         prediction = model.predict(input_data, verbose=0)
         confidence = prediction[0][0]

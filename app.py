@@ -1,6 +1,5 @@
-from flask import Flask, render_template, jsonify, Response
+from flask import Flask, render_template, jsonify, Response, request
 from chatbot_engine import get_answer
-import csv
 import cv2
 from detect import process_frame
 from utils.tts import speak
@@ -16,14 +15,12 @@ last_tts_time = 0
 
 def generate_frames():
     global latest_status, last_tts_time
-    # cap = cv2.VideoCapture(0)
-    cap = cv2.VideoCapture(r"http://192.168.1.7:81/stream", cv2.CAP_FFMPEG)  # URL kamera ESP32-CAM http://192.168.1.1:81/stream
+    cap = cv2.VideoCapture(0)
+    # cap = cv2.VideoCapture(r"http://192.168.1.7:81/stream", cv2.CAP_FFMPEG)  # URL kamera ESP32-CAM http://192.168.1.1:81/stream
 
     if not cap.isOpened():
         print("Kamera tidak bisa dibuka!")
         return
-    
-    # tts_playing = False
     
     while True:
         success, frame = cap.read()
@@ -36,7 +33,7 @@ def generate_frames():
         
         current_time = time.time()
         if label == "smoking" and (current_time - last_tts_time) > 10:
-            threading.Thread(target=speak, args=("smoking detected, don't smoking in this area!",), daemon=True).start()
+            threading.Thread(target=speak, args=("smoking detected, don't smoking in this area!",)).start()
             last_tts_time = current_time
         else:
             pass
@@ -60,7 +57,16 @@ def detection_status():
 
 @app.route('/deteksi')
 def deteksi():
-    return render_template('deteksi.html')  
+    return render_template('deteksi.html')
+
+@app.route('/speak', methods=['POST'])
+def trigger_speak():
+    data = request.get_json()
+    text = data.get('text', '')
+    if text.strip() == '':
+        return jsonify({'error': 'no text provided'}), 400
+    threading.Thread(target=speak, args=(text,)).start()
+    return jsonify({'status': 'Speaking Started'})
 
 @app.route('/statistik')
 def statistik():
